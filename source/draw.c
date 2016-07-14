@@ -85,46 +85,6 @@ void DrawStringF(int x, int y, bool use_top, const char *format, ...)
     }
 }
 
-void Screenshot(const char* path)
-{
-    u8* buffer = (u8*) 0x21000000; // careful, this area is used by other functions in Decrypt9
-    u8* buffer_t = buffer + (400 * 240 * 3);
-    u8 bmp_header[54] = {
-        0x42, 0x4D, 0x36, 0xCA, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x36, 0x00, 0x00, 0x00, 0x28, 0x00,
-        0x00, 0x00, 0x90, 0x01, 0x00, 0x00, 0xE0, 0x01, 0x00, 0x00, 0x01, 0x00, 0x18, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0xCA, 0x08, 0x00, 0x12, 0x0B, 0x00, 0x00, 0x12, 0x0B, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-    };
-
-    if (path == NULL) {
-        static u32 n = 0;
-        for (; n < 1000; n++) {
-            char filename[16];
-            snprintf(filename, 16, "snap%03i.bmp", (int) n);
-            if (!FileOpen(filename)) {
-                FileCreate(filename, true);
-                break;
-            }
-            FileClose();
-        }
-        if (n >= 1000)
-            return;
-    } else {
-        FileCreate(path, true);
-    }
-
-    memset(buffer, 0x1F, 400 * 240 * 3 * 2);
-    for (u32 x = 0; x < 400; x++)
-        for (u32 y = 0; y < 240; y++)
-            memcpy(buffer_t + (y*400 + x) * 3, TOP_SCREEN0 + (x*240 + y) * 3, 3);
-    for (u32 x = 0; x < 320; x++)
-        for (u32 y = 0; y < 240; y++)
-            memcpy(buffer + (y*400 + x + 40) * 3, BOT_SCREEN0 + (x*240 + y) * 3, 3);
-    FileWrite(bmp_header, 54, 0);
-    FileWrite(buffer, 400 * 240 * 3 * 2, 54);
-    FileClose();
-}
-
 void DebugClear()
 {
     memset(debugstr, 0x00, DBG_N_CHARS_X * DBG_N_CHARS_Y);
@@ -132,11 +92,6 @@ void DebugClear()
         debugcol[y] = DBG_COLOR_FONT;
     ClearScreen(TOP_SCREEN0, SCREEN_WIDTH_TOP, DBG_COLOR_BG);
     ClearScreen(TOP_SCREEN1, SCREEN_WIDTH_TOP, DBG_COLOR_BG);
-    #if defined USE_THEME && defined GFX_DEBUG_BG
-    LoadThemeGfx(GFX_DEBUG_BG, true);
-    #endif
-    LogWrite("");
-    LogWrite(NULL);
 }
 
 void DebugSet(const char **strs)
@@ -178,7 +133,6 @@ void DebugColor(u32 color, const char *format, ...)
     *debugcol = color;
     if (*tempstr != '\r') { // not a good way of doing this - improve this later
         snprintf(debugstr, DBG_N_CHARS_X, "%-*.*s", DBG_N_CHARS_X - 1, DBG_N_CHARS_X - 1, tempstr);
-        LogWrite(tempstr);
     } else {
         snprintf(debugstr, DBG_N_CHARS_X, "%-*.*s", DBG_N_CHARS_X - 1, DBG_N_CHARS_X - 1, tempstr + 1);
         adv_output = false;
@@ -198,7 +152,6 @@ void Debug(const char *format, ...)
     va_end(va);
 }
 
-#if !defined(USE_THEME) || !defined(ALT_PROGRESS)
 void ShowProgress(u64 current, u64 total)
 {
     const u32 progX = SCREEN_WIDTH_TOP - 40;
@@ -214,4 +167,3 @@ void ShowProgress(u64 current, u64 total)
         DrawString(TOP_SCREEN1, "    ", progX, progY, DBG_COLOR_FONT, DBG_COLOR_BG);
     }
 }
-#endif
