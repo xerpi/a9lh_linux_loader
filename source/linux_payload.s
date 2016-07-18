@@ -20,6 +20,12 @@
 #define FB_BOT_1              (FB_TOP_RIGHT2 + FB_TOP_SIZE)
 #define FB_BOT_2              (FB_BOT_1      + FB_BOT_SIZE)
 
+@ SCU
+#define SCU_BASE_ADDR		0x17E00000
+#define SCU_CTRL_REG		0x00
+#define SCU_INV_ALL_REG		0x0C
+#define SCU_CTRL_ENABLE		(1 << 0)
+
 	.arm
 	.align 4
 	.code 32
@@ -54,6 +60,17 @@ linux_arm11_stage_start:
 
 	@ Clear exclusive records
 	clrex
+
+	ldr r0, =SCU_BASE_ADDR
+
+	@ Disable SCU
+	ldr r1, [r0, #SCU_CTRL_REG]
+	bic r1, r1, #SCU_CTRL_ENABLE
+	str r1, [r0, #SCU_CTRL_REG]
+
+	@ Invalidate SCU ways
+	ldr r1, =0xFF
+	str r1, [r0, #SCU_INV_ALL_REG]
 
 	@@@@@ Map Framebuffers @@@@@
 

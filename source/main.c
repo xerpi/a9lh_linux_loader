@@ -69,18 +69,18 @@ int main(void)
 		wait_any_key_poweroff();
 	}
 
-	if (!load_file(LINUXIMAGE_FILENAME, ZIMAGE_ADDR)) {
-		if (!load_file(FALLBACK_PATH LINUXIMAGE_FILENAME, ZIMAGE_ADDR))
+	if (!load_file(FALLBACK_PATH LINUXIMAGE_FILENAME, ZIMAGE_ADDR)) {
+		if (!load_file(LINUXIMAGE_FILENAME, ZIMAGE_ADDR))
 			goto error;
 	}
 
-	if (!load_file(DTB_FILENAME, PARAMS_ADDR)) {
-		if (!load_file(FALLBACK_PATH DTB_FILENAME, PARAMS_ADDR))
+	if (!load_file(FALLBACK_PATH DTB_FILENAME, PARAMS_ADDR)) {
+		if (!load_file(DTB_FILENAME, PARAMS_ADDR))
 			goto error;
 	}
 
-	if (!load_file(ARM9LINUXFW_FILENAME, ARM9LINUXFW_ADDR)) {
-		if (!load_file(FALLBACK_PATH ARM9LINUXFW_FILENAME, ARM9LINUXFW_ADDR))
+	if (!load_file(FALLBACK_PATH ARM9LINUXFW_FILENAME, ARM9LINUXFW_ADDR)) {
+		if (!load_file(ARM9LINUXFW_FILENAME, ARM9LINUXFW_ADDR))
 			Debug("Continuing without an arm9linuxfw...");
 	} else {
 		has_arm9linuxfw = 1;
@@ -89,10 +89,6 @@ int main(void)
 	flushCaches();
 
 	DeinitFS();
-
-	Debug("");
-	Debug("Press any key to jump to Linux.");
-	wait_any_key_pressed();
 
 	/* Make the ARM11 jump to the Linux payload */
 	*(vu32 *)0x1FFFFFF8 = (uintptr_t)&linux_arm11_stage_start;
@@ -103,7 +99,8 @@ int main(void)
 	if (has_arm9linuxfw) {
 		((void (*)(void))ARM9LINUXFW_ADDR)();
 	} else {
-		/* If we are here, there's no arm9linuxfw, so we just
+		/*
+		 * If we are here, there's no arm9linuxfw, so we just
 		 * busy loop in WFI state to save battery.
 		 */
 		while (1) {
