@@ -1,4 +1,4 @@
-# arm9loaderhax Linux Loader
+# DEPRECATED, USE https://github.com/xerpi/firm_linux_loader INSTEAD
 _arm9loaderhax Linux Loader for the Nintendo 3DS_
 
 ## How to run this
