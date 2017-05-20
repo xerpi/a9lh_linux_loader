@@ -18,7 +18,9 @@ ARCH = -mcpu=arm946e-s -march=armv5te -mlittle-endian -mthumb-interwork
 ASFLAGS = $(ARCH) $(INCLUDE) -x assembler-with-cpp
 CFLAGS = -Wall -O0 -fno-builtin -nostartfiles $(ARCH) $(INCLUDE)
 
-all: $(TARGET).bin
+.PHONY: all clean copy
+
+all: $(TARGET).firm
 
 $(TARGET).elf: $(OBJS)
 	$(CC) -T linker.ld $^ -o $@
@@ -32,8 +34,11 @@ $(TARGET).elf: $(OBJS)
 .s.o:
 	$(CC) $(ASFLAGS) -c $< -o $@
 
-clean:
-	@rm -f $(OBJS) $(TARGET).elf $(TARGET).bin
+%.firm: %.bin
+	firmtool build $@ -n 0x23F00000 -e 0 -D $< -A 0x23F00000 -C NDMA -i
 
-copy: $(TARGET).bin
-	cp $< $(SD3DS)/luma/payloads/down_$(TARGET).bin && sync
+clean:
+	@rm -f $(OBJS) $(TARGET).elf $(TARGET).bin $(TARGET).firm
+
+copy: $(TARGET).firm
+	cp $< $(SD3DS)/luma/payloads/down_$(TARGET).firm && sync

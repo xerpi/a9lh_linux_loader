@@ -46,7 +46,8 @@ static int load_file(const char *filename, uint32_t addr)
 
 	size = FileRead((void *)addr, (uintptr_t)MAX_PERMITTED_ADDR - (uintptr_t)addr, 0);
 
-	Debug("File %s loaded, size: %d B", filename, size);
+	Debug("File %s loaded:", filename);
+	Debug("    size: %d B", size);
 
 	FileClose();
 
